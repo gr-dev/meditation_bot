@@ -1,0 +1,8 @@
+torch >= 1.12.0
+omegaconf >= 2.1.0
+ipython
+numpy
+ipython
+scipy
+torchaudio
+pydub
