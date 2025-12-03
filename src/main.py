@@ -10,6 +10,7 @@ from pathlib import Path
 import sys
 import re
 import numpy as np
+import mistral_client
 
 def generateVoice(text, outFile):
     language = 'ru'
@@ -151,7 +152,7 @@ def generateSsmlText(text, output_dir='out', speaker = "baya"):
     """
     device = torch.device('cpu')
     torch.set_num_threads(4)
-    local_file = 'D:/src/meditation_bot/resources/models/v5_ru.pt'
+    local_file = 'I:/git/meditation_bot/resources/models/v5_ru.pt'
 
     if not os.path.isfile(local_file):
         torch.hub.download_url_to_file('https://models.silero.ai/models/tts/ru/v5_ru.pt',
@@ -241,16 +242,27 @@ def generateFileNames():
     outFileName = f"out/mix_{now.strftime('%Y-%m-%d_%H-%M-%S')}.mp3"
     return (voiceFileName, outFileName)
 
+def getTextFromMistral() -> str:
+    client = mistral_client.MistralClient()
+    system_prompt = "сгенерируй текст для медитации на основе ответа пользователя, как он себя чувствует. Ответ в формате ssml, без дополнительных комментариев"
+    prompt = "Сегодня был тяжелый день, хочу отдохнуть."
+    response = client.ask(prompt=prompt, system_promt=system_prompt, max_tokens=1000)
+    print("Mistral response:")
+    print(response)
+    return response
 
-if __name__ == "__main__":
-
-    #костыль для решения проблемы с ffmpeg
-    sys.path.append('C:/Program Files/ffmpeg/bin')
-
-    file_path = "D:/src/meditation_bot/resources/text/ssml_900.txt"
+def getSsmlTest(fileName : str):
+    if fileName is None:
+        return getTextFromMistral()
+    file_path = "I:/src/meditation_bot/resources/text/ssml_900.txt"
     print(f"Processing text file {file_path}")
     ssmlText = readFile(file_path)
     print(f"Text length: {len(ssmlText)} characters")
+
+if __name__ == "__main__":
+    ssmlText = getSsmlTest(None)
+    #костыль для решения проблемы с ffmpeg
+    sys.path.append('C:/Program Files/ffmpeg/bin')
     
     # Generate voice audio (handles chunking automatically)
     voice = generateSsmlText(ssmlText)
@@ -262,7 +274,8 @@ if __name__ == "__main__":
     outFileName = f"out/mix_{now.strftime('%Y-%m-%d_%H-%M-%S')}.mp3"
     
     # Overlay with background music
-    backgroundMusic = "D:/src/meditation_bot/resources/music/1.mp3"
+    backgroundMusic = "I:/git/meditation_bot/resources/music/001.mp3"
     mix_audio(voice, backgroundMusic, outFileName)
     
     print(f"Final result saved to: {outFileName}")
+

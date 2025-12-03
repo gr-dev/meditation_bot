@@ -6,3 +6,5 @@ ipython
 scipy
 torchaudio
 pydub
+requests
+python-dotenv
